@@ -1,0 +1,35 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "target": "esnext",
+  "module": "esnext",
+  "strict": true,
+  "declaration": true,
+  "noImplicitAny": true,
+  "declarationDir": "dist",
+  "noUnusedLocals": true,
+  "noUnusedParameters": true,
+  "importHelpers": true,
+  "moduleResolution": "node",
+  "experimentalDecorators": true,
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true,
+  "suppressImplicitAnyIndexErrors": true,
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": [
+      "node",
+      "vue",
+      "google-libphonenumber"
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+
+  "references": [
+    {
+      "path": "./tsconfig.config.json"
+    }
+  ]
+}
