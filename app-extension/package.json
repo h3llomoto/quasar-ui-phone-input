@@ -1,0 +1,22 @@
+{
+  "name": "quasar-app-extension-quasar-phone-input",
+  "version": "0.0.1",
+  "description": "A Quasar App Extension",
+  "author": "h3llomoto <alexey.k.here@yandex.ru>",
+  "license": "MIT",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "homepage": "",
+  "dependencies": {
+    "quasar-ui-quasar-phone-input": "latest"
+  },
+  "engines": {
+    "node": ">= 8.9.0",
+    "npm": ">= 5.6.0",
+    "yarn": ">= 1.6.0"
+  }
+}
