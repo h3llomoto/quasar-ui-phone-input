@@ -63,8 +63,8 @@
 <script lang="ts" setup>
 import { ref, watch, onMounted } from 'vue';
 import countries, { filterCountries } from './countries';
-import type { Country, QInputRestProps, QSelectRestProps } from './types';
-import { QSelect, QIcon, QSeparator, QInput, type QSelectProps, type QInputProps } from 'quasar';
+import { Country, QInputRestProps, QSelectRestProps } from './types';
+import { QSelect, QIcon, QInput } from 'quasar';
 
 const defaultDropdownOptions:QSelectRestProps = {
   hideBottomSpace: true,
@@ -116,28 +116,3 @@ watch(() => props.modelValue, () => {
   performSearch();
 });
 </script>
-
-<style lang="scss">
-@import './flags';
-.v3-q-tel-input--country {
-  .q-field__control {
-    background: none !important;
-    &::before {
-      display: none !important;
-    }
-  }
-  .q-field__input {
-    border: none !important;
-  }
-}
-.v3-q-tel--country-selector {
-  position: sticky !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-}
-
-.q-field--labeled.q-field--dense .v3-q-tel-input--country .q-field__native {
-  padding: 0;
-}
-</style>

@@ -1,0 +1,5 @@
+/*!
+ * quasar-ui-quasar-phone-input v0.0.1
+ * (c) 2023 h3llomoto <alexey.k.here@yandex.ru>
+ * Released under the MIT License.
+ */@import "./components/flags.css";.vue3-q-tel-input.no-feedback .q-field__control:after,.vue3-q-tel-input .no-feedback .q-field__control:after,.vue3-q-tel-input.no-inherit-feedback.q-field--highlighted .q-field__inner .q-field__inner .q-field__control:after,.vue3-q-tel-input .no-inherit-feedback.q-field--highlighted .q-field__inner .q-field__inner .q-field__control:after{display:none}.vue3-q-tel-input--country .q-field__control{background:none!important}.vue3-q-tel-input--country .q-field__control:before{display:none!important}.vue3-q-tel-input--country .q-field__input{border:none!important}.v3-q-tel--country-selector{position:sticky!important;bottom:0!important;left:0!important;right:0!important}.q-field--labeled.q-field--dense .v3-q-tel-input--country .q-field__native{padding:0}

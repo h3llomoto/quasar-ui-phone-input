@@ -1,4 +1,4 @@
-import type { Country } from './types';
+import { Country } from './types';
 import { countryInformation } from './data';
 
 const all = countryInformation.map((item) => {

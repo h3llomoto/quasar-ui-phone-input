@@ -3,10 +3,13 @@ const fs = require('fs')
 const fse = require('fs-extra')
 const rollup = require('rollup')
 const uglify = require('uglify-js')
-const buble = require('@rollup/plugin-buble')
 const json = require('@rollup/plugin-json')
+const babel = require('@rollup/plugin-babel')
 const { nodeResolve } = require('@rollup/plugin-node-resolve')
 const replace = require('@rollup/plugin-replace')
+const rollupVuePlugin = require('rollup-plugin-vue')
+const typescript = require('@rollup/plugin-typescript')
+const commonJs = require('@rollup/plugin-commonjs')
 
 const { version } = require('../package.json')
 
@@ -14,6 +17,10 @@ const buildConf = require('./config')
 const buildUtils = require('./utils')
 
 const rollupPlugins = [
+  typescript({
+    tsconfig: './tsconfig.json',
+  }),
+  rollupVuePlugin(),
   replace({
     preventAssignment: false,
     values: {
@@ -25,10 +32,19 @@ const rollupPlugins = [
     preferBuiltins: false
   }),
   json(),
-  buble({
-    objectAssign: 'Object.assign'
-  })
+  babel({
+    exclude: 'node_modules/**',
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
+    babelHelpers: 'bundled',
+    presets: [
+      '@babel/preset-env',
+      '@babel/preset-typescript',
+    ],
+    plugins: [['@babel/plugin-proposal-decorators', { version: "legacy" }]],
+  }),
+  commonJs(),
 ]
+
 
 const builds = [
   {

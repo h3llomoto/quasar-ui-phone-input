@@ -31,8 +31,6 @@ import {
 } from 'vue';
 import {
   QInput,
-  type QInputProps,
-  type QSelectProps,
 } from 'quasar';
 import {
   PhoneNumberUtil,
@@ -40,7 +38,11 @@ import {
   PhoneNumberFormat,
 } from 'google-libphonenumber';
 import CountrySelection from './CountrySelection.vue';
-import type { Country, QInputRestProps, QSelectRestProps } from './types';
+import {
+  Country,
+  QInputRestProps,
+  QSelectRestProps
+} from './types';
 import {
   getCountryByDialCode,
   getDefault,
@@ -205,6 +207,3 @@ watch(() => country.value, () => {
 }, { immediate: true, })
 
 </script>
-
-<style lang="scss">
-</style>

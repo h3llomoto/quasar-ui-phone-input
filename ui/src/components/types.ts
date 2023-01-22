@@ -1,4 +1,4 @@
-import type { QSelectProps, QInputProps } from 'quasar';
+import { QSelectProps, QInputProps } from 'quasar';
 type QSelectPropsPartial = Partial<QSelectProps>;
 type QInputPropsPartial = Partial<QInputProps>;
 
@@ -20,4 +20,4 @@ interface Country {
   nameLC?: string;
 }
 
-export type { Country, QSelectRestProps, QInputRestProps };
+export { Country, QSelectRestProps, QInputRestProps };
