@@ -1,36 +1,16 @@
-Quasar App Extension phone-input
-===
+<img src="https://img.shields.io/npm/v/quasar-ui-quasar-phone-input.svg?label=quasar-ui-quasar-phone-input">
+<img src="https://img.shields.io/npm/v/quasar-app-extension-quasar-phone-input.svg?label=quasar-app-extension-quasar-phone-input">
 
-_Be sure to change this readme as appropriate for your app extension._
+Compatible with Quasar UI v2 and Vue 3.
 
-_Think about the organization of this file and how the information will be beneficial to the user._
+# Structure
+* [/ui](ui) - standalone npm package
 
-> Add a short description of your App Extension. What does it do? How is it beneficial? Why would someone want to use it?
+* [/app-extension](app-extension) - Quasar app extension
 
-Phone input with country code
-
-# Install
-```bash
-quasar ext add phone-input
-```
-Quasar CLI will retrieve it from the NPM registry and install the extension to your project.
-
-
-## Prompts
-
-> Explain the prompts here
-
-
-# Uninstall
-```bash
-quasar ext remove phone-input
-```
-
-# Info
-> Add longer information here that will help the user of your app extension.
-
-# Other Info
-> Add other information that's not as important to know
 
 # Donate
-If you appreciate the work that went into this App Extension, please consider [donating to Quasar](https://donate.quasar.dev).
+If you appreciate the work that went into this project, please consider [donating to Quasar](https://donate.quasar.dev).
+
+# License
+MIT (c) h3llomoto <alexey.k.here@yandex.ru>
