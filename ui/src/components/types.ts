@@ -1,11 +1,9 @@
 import { QSelectProps, QInputProps } from 'quasar';
-type QSelectPropsPartial = Partial<QSelectProps>;
-type QInputPropsPartial = Partial<QInputProps>;
 
-interface QSelectRestProps extends QSelectPropsPartial {}
-interface QInputRestProps extends QInputPropsPartial {}
+export type QSelectRestProps = Partial<QSelectProps>;
+export type QInputRestProps = Partial<QInputProps>;
 
-interface Country {
+export interface Country {
   name: string;
   iso2: string;
   dialCode: string;
@@ -19,5 +17,3 @@ interface Country {
   iso2LC?: string;
   nameLC?: string;
 }
-
-export { Country, QSelectRestProps, QInputRestProps };

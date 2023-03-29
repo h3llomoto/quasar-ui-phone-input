@@ -1,23 +1,32 @@
 <template>
   <q-input
-    :error="hasError"
+    v-bind="inputOptions"
     :model-value="number"
-    class="vue3-q-tel-input no-inherit-feedback"
-    @update:model-value="phoneChanged"
-    :maxlength="prevValue.length"
-    :v-bind="inputOptions"
+    :error="!!errorMessage || undefined"
     :error-message="errorMessage"
+    :class="[
+      'vue3-q-tel-input', 'no-inherit-feedback',
+      { 'vue3-q-tel-input--has-value': !!number }
+    ]"
+    :rules="[...(rules ?? []), validate]"
+    :lazy-rules="lazyRules"
+    @update:model-value="phoneChanged"
   >
     <template #prepend>
       <CountrySelection
         v-model="country"
         :use-icon="useIcon"
-        @countryChanged="countryChanged()"
         :searching="searching"
         :dropdown-options="dropdownOptions"
         :search-input-options="searchInputOptions"
         class="no-border-field-before no-padding-field font-reduced-input-adon"
+        :countries="countriesReordered"
+        :hide-country-code="hideCountryCode"
+        @country-changed="countryChanged()"
       />
+    </template>
+    <template #append>
+      <slot name="append" />
     </template>
   </q-input>
 </template>
@@ -25,12 +34,12 @@
 <script lang="ts" setup>
 import {
   ref,
-  onMounted,
   nextTick,
-  watch
+  watch,
+  computed,
 } from 'vue';
 import {
-  QInput,
+  QInput, ValidationRule,
 } from 'quasar';
 import {
   PhoneNumberUtil,
@@ -38,19 +47,18 @@ import {
   PhoneNumberFormat,
 } from 'google-libphonenumber';
 import CountrySelection from './CountrySelection.vue';
-import {
+import type {
   Country,
   QInputRestProps,
-  QSelectRestProps
+  QSelectRestProps,
 } from './types';
-import {
+import countries, {
   getCountryByDialCode,
   getDefault,
   getCountryCodeFromPhoneNumber,
 } from './countries';
 
 const phoneNumberUtil: PhoneNumberUtil = new PhoneNumberUtil();
-
 const props = withDefaults(defineProps<{
   modelValue: string | number;
   searching?: boolean;
@@ -59,99 +67,128 @@ const props = withDefaults(defineProps<{
   dropdownOptions?: QSelectRestProps;
   searchInputOptions?: QInputRestProps;
   defaultCountry?: string;
-  eagerValidate?: boolean;
+  rules?: ValidationRule[],
+  lazyRules?: boolean;
   useIcon?: boolean;
+  validationMessage?: string,
   errorMessage?: string,
+  error?: boolean,
+  preferCountries?: Country['iso2'][],
+  hideCountryCode?: boolean,
 }>(), {
   modelValue: '',
   required: false,
   searching: false,
   dropdownOptions: undefined,
   defaultCountry: 'us',
-  eagerValidate: false,
+  lazyRules: false,
+  rules: undefined,
   useIcon: false,
-  errorMessage: 'Please type coppect phone number'
+  validationMessage: 'Please enter correct phone number',
+  errorMessage: undefined,
+  error: false,
+  hideCountryCode: false,
+  inputOptions: undefined,
+  searchInputOptions: undefined,
+  preferCountries: undefined,
 });
 
 const emits = defineEmits<{
   (event: 'update:model-value', value: string): void;
   (event: 'input', value: string): void;
-  (event: 'error', value: boolean): void;
+  (event: 'update:error', value: boolean): void;
+  (event: 'country-changed', value: Country): void,
 }>();
 
 const country = ref(<Country>getDefault(props.defaultCountry));
-const oldCountry = ref<Country | undefined>(undefined);
+emits('country-changed', country.value);
+const oldCountry = ref<Country>();
 const number = ref('');
 const hasError = ref(false);
 const prevValue = ref('01234567890123456789');
-const phoneNumber = ref<PhoneNumber | undefined>(undefined);
+const phoneNumber = ref<PhoneNumber>();
 
-onMounted(() => {
+const error = computed(() => (!props.inputOptions?.disable ? hasError.value : undefined));
 
+const countriesReordered = computed(() => {
+  if (!props.preferCountries || !props.preferCountries.length) return countries;
+
+  const preferedCountries:Country[] = [];
+  const newCountries = [...countries].filter((country) => {
+    const isPrefered = props.preferCountries?.includes(country.iso2);
+    if (isPrefered) {
+      preferedCountries.push(country);
+    }
+    return !isPrefered;
+  });
+  return [...preferedCountries, ...newCountries];
 });
 
 function getNumber(instance: PhoneNumber): string {
   if (!phoneNumber.value) {
     return '';
   }
-
   let phone: string = phoneNumberUtil.format(instance, PhoneNumberFormat.NATIONAL);
-
   if (phone.indexOf('0') === 0) {
     phone = phone.replace(/^0/, '');
   }
   return phone;
 }
-function setPhone() {
+
+function setCountry(c: Country) {
+  if (c.iso2 === country.value.iso2) return;
+  country.value = c;
+  emits('country-changed', country.value);
+}
+
+async function validate() {
+  await setPhone();
+
+  return hasError.value ? props.validationMessage : true;
+}
+
+async function setPhone() {
   let currCountry = country.value;
   const stringModelValue = props.modelValue.toString().trim();
 
-  if (props.modelValue.toString() !== '') {
-    const inCountry = getCountryCodeFromPhoneNumber(stringModelValue);
-
+  if (stringModelValue !== '' && stringModelValue.includes('+')) {
+    const inCountry = getCountryCodeFromPhoneNumber(stringModelValue, countriesReordered.value);
     if (inCountry && country.value?.iso2 !== inCountry.iso2) {
       currCountry = inCountry;
-      nextTick(() => {
-        country.value = currCountry;
+      await nextTick(() => {
+        setCountry(currCountry);
       });
     }
   }
-
   try {
     phoneNumber.value = phoneNumberUtil.parse(stringModelValue, country.value.iso2);
     number.value = getNumber(phoneNumber.value);
     hasError.value = !phoneNumberUtil.isValidNumberForRegion(phoneNumber.value, country.value.iso2);
   } catch (e) {
     phoneNumber.value = undefined;
-    hasError.value = props.eagerValidate
-      ? (
-        stringModelValue.trim() === ''
-          ? props.required
-          : true
-        )
-      : false;
-    number.value = props.modelValue.toString().trim();
-  }
-  emits('error', hasError.value);
-}
-function phoneChanged(val: string | number | null) {
-  val = val === null ? '' : val.toString();
-  let phone: PhoneNumber | undefined;
+    hasError.value = stringModelValue.length ? props.required : true;
 
+    number.value = stringModelValue;
+  }
+
+  emits('update:error', hasError.value);
+}
+
+function phoneChanged(v: string | number | null) {
+  const val = v === null ? '' : v.toString();
+  let phone: PhoneNumber | undefined;
   try {
     phone = phoneNumberUtil.parse(val.trim(), country.value.iso2);
   } catch {
     phone = undefined;
   }
-
-  const filtered_val = val.replace(/ /g, '');
-
-  if (filtered_val.length > 2 && filtered_val.indexOf('+') === 0) {
+  const filteredVal = val.replace(/ /g, '');
+  if (filteredVal.length > 2 && filteredVal.indexOf('+') === 0) {
     // some country code is in action
-    const parsedCountry = getCountryByDialCode(filtered_val);
+    const parsedCountry = getCountryByDialCode(filteredVal);
     if (parsedCountry) {
-      country.value = parsedCountry;
-      countryChanged(filtered_val.replace(`+${parsedCountry.dialCode}`, ''));
+      setCountry(parsedCountry);
+      countryChanged(filteredVal.replace(`+${parsedCountry.dialCode}`, ''));
     }
   }
   const num = phone ? getNumber(phone) : val;
@@ -159,19 +196,20 @@ function phoneChanged(val: string | number | null) {
   prevValue.value = isPhoneExistsAndValid
     ? getNumber(phone!)
     : prevValue.value;
-
   if (num.replace(/ /g, '').length > prevValue.value.replace(/ /g, '').length) {
-    return setPhone(); // no need to update as its not valid
+    setPhone(); // no need to update as its not valid
+    return;
   }
   const phoneFormatted = phone
     ? phoneNumberUtil.format(phone, PhoneNumberFormat.INTERNATIONAL)
     : val.trim();
-
   emits('update:model-value', phoneFormatted);
   emits('input', phoneFormatted);
 }
 
 function countryChanged(val?: string, force?: boolean) {
+  emits('country-changed', country.value);
+
   prevValue.value = '01234567890123456789';
   const value = (
     (
@@ -182,28 +220,27 @@ function countryChanged(val?: string, force?: boolean) {
   ).trim();
   phoneChanged(
     oldCountry.value
-    ? value.replace(`+${oldCountry.value.dialCode}`, `+${country.value.dialCode}`)
-    : value);
+      ? value.replace(`+${oldCountry.value.dialCode}`, `+${country.value.dialCode}`)
+      : value,
+  );
   setPhone();
 }
 
-watch(
-  () => props.modelValue,
-  setPhone,
-  { immediate: true, },
-);
+watch(() => props.modelValue, setPhone, { immediate: true });
 
 watch(() => props.defaultCountry, (defaultCountry) => {
   if (defaultCountry) {
-
-    country.value = <Country>getDefault(defaultCountry);
+    setCountry(<Country>getDefault(defaultCountry));
   }
-}, { immediate: true, });
+}, { immediate: true });
 
 watch(() => country.value, () => {
   nextTick(() => {
     oldCountry.value = country.value;
   });
-}, { immediate: true, })
-
+}, { immediate: true });
 </script>
+
+<style lang="scss">
+@import './component.scss';
+</style>

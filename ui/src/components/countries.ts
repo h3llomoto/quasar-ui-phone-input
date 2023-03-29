@@ -2,7 +2,7 @@ import { Country } from './types';
 import { countryInformation } from './data';
 
 const all = countryInformation.map((item) => {
-  const clonedItem = { ...item };
+  const clonedItem:Country = { ...item };
 
   if (item.languages) {
     clonedItem.languages = [...item.languages];
@@ -14,30 +14,30 @@ const all = countryInformation.map((item) => {
   return clonedItem;
 }).sort((a, b) => {
   if (a.name > b.name) return 1;
-  else if (a.name < b.name) return -1;
+  if (a.name < b.name) return -1;
   return 0;
 });
 
 export default all;
 
-export const getDefault = (country = 'us') => all.find(a => a.iso2 === country.trim().toUpperCase());
+export const getDefault = (country = 'us') => all.find((a) => a.iso2 === country.trim().toUpperCase());
 
-export const getCountryCodeFromPhoneNumber = (number: string) => {
-  number = number.trim();
-  if (number.indexOf('+') === 0) {
-    number = number.slice(1);
+export const getCountryCodeFromPhoneNumber = (number: string, countryList: Country[]) => {
+  let num = number.trim();
+  if (num.indexOf('+') === 0) {
+    num = num.slice(1);
   }
-  return all.find(f => number.indexOf(f.dialCode) === 0);
+  return countryList.find((f) => num.indexOf(f.dialCode) === 0);
 };
 
-export const getCountryByDialCode = (val = '') => all.find(f => f.dialCode && val.indexOf(`+${f.dialCode}`) !== -1);
+export const getCountryByDialCode = (val = '') => all.find((f) => f.dialCode && val.indexOf(`+${f.dialCode}`) !== -1);
 
-export const filterCountries = (term: string): Country[] => {
-  term = term.includes('+') ? term.replace('+', '') : term;
-  return all.filter(f => {
+export const filterCountries = (search: string, countryList: Country[]): Country[] => {
+  const term = search.includes('+') ? search.replace('+', '') : search;
+  return countryList.filter((f) => {
     if (
       f.dialCode.indexOf(term) !== -1
-      || (term.length >2 && f.iso2LC!.indexOf(term) !== -1)
+      || (term.length > 2 && f.iso2LC!.indexOf(term) !== -1)
       || f.nameLC!.indexOf(term) !== -1
     ) {
       return true;

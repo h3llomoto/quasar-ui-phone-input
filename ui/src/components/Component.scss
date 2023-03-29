@@ -1,4 +1,4 @@
-.vue3-q-tel-input {
+.q-field.vue3-q-tel-input {
   &.no-inherit-feedback, .no-inherit-feedback {
     &.q-field--highlighted {
       .q-field__inner {
@@ -17,7 +17,7 @@
     }
   }
 
-  &--country {
+  & &--country {
     .q-field__control {
       background: none !important;
       &::before {
@@ -27,16 +27,24 @@
     .q-field__input {
       border: none !important;
     }
+    .q-field__native {
+      padding-top: 0;
+      padding-bottom: 0;
+      transition: 0.2s;
+    }
+  }
+
+  &.vue3-q-tel-input--has-value, &.q-field--focused {
+    .vue3-q-tel-input--country .q-field__native {
+      padding-top: 14px;
+      padding-bottom: 2px;
+    }
   }
 }
 
-.v3-q-tel--country-selector {
+.vue3-q-tel--country-selector {
   position: sticky !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-}
-
-.q-field--labeled.q-field--dense .v3-q-tel-input--country .q-field__native {
-  padding: 0;
 }

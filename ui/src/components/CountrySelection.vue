@@ -3,19 +3,19 @@
     :model-value="modelValue"
     :options="countryOptions"
     virtual-scroll-slice-size="9999"
-    class="no-inherit-feedback no-feedback v3-q-tel-input--country"
+    class="no-inherit-feedback no-feedback vue3-q-tel-input--country"
     :menu-offset="[12, 0]"
     options-dense
     v-bind="dropdownOptions ?? defaultDropdownOptions"
     @update:model-value="countryChanged"
     @popup-hide="searchText = ''"
   >
-    <template v-slot:option="scope">
+    <template #option="scope">
       <q-item v-bind="scope.itemProps">
         <q-item-section>
           <q-item-label>
             <span
-              :class="!useIcon ? ['v3q_tel__flag', scope.opt.iso2LC] : ''"
+              :class="!useIcon ? ['fi', `fi-${scope.opt.iso2LC}`] : ''"
             >{{ useIcon ? scope.opt.emoji : '' }}</span>
             <span class="text-no-wrap ellipsis q-ml-md">{{ scope.opt.name }}</span>
             <span class="q-ml-sm">+{{ scope.opt.dialCode }}</span>
@@ -23,7 +23,7 @@
         </q-item-section>
       </q-item>
     </template>
-    <template v-slot:selected-item="scope">
+    <template #selected-item="scope">
       <div
         v-if="scope.opt"
         class="q-pa-none ellipsis"
@@ -31,27 +31,28 @@
       >
         <div class="flex items-center no-wrap">
           <span
-            :class="{
-              v3q_tel__flag: !useIcon,
-              [scope.opt.iso2LC]: !useIcon,
-            }"
+            :class="!useIcon ? ['fi', `fi-${scope.opt.iso2LC}`] : ''"
           >{{ useIcon ? scope.opt.emoji : '' }}</span>
-          <span class="ellipsis text-no-wrap q-ml-xs" v-html="`+${scope.opt.dialCode}`"></span>
+          <span
+            v-if="!hideCountryCode"
+            class="ellipsis text-no-wrap q-ml-xs"
+            v-html="`+${scope.opt.dialCode}`"
+          />
         </div>
       </div>
     </template>
     <template
       v-if="searching"
-      v-slot:after-options
+      #after-options
     >
-      <div class="v3-q-tel--country-selector last-search-item q-pa-sm">
+      <div class="vue3-q-tel--country-selector last-search-item q-pa-sm">
         <q-input
-          v-model="searchText"
           ref="input"
+          v-model="searchText"
           v-bind="searchInputOptions ?? defaultSearchInputOptions"
           @update:model-value="performSearch"
         >
-          <template v-slot:prepend>
+          <template #prepend>
             <q-icon name="search" />
           </template>
         </q-input>
@@ -59,12 +60,11 @@
     </template>
   </q-select>
 </template>
-
 <script lang="ts" setup>
 import { ref, watch, onMounted } from 'vue';
-import countries, { filterCountries } from './countries';
-import { Country, QInputRestProps, QSelectRestProps } from './types';
 import { QSelect, QIcon, QInput } from 'quasar';
+import { filterCountries } from './countries';
+import type { Country, QInputRestProps, QSelectRestProps } from './types';
 
 const defaultDropdownOptions:QSelectRestProps = {
   hideBottomSpace: true,
@@ -77,18 +77,21 @@ const defaultSearchInputOptions:QInputRestProps = {
   outlined: true,
   filled: true,
   label: 'Search',
-}
+};
+
 const props = withDefaults(defineProps<{
   modelValue: Country;
   searching: boolean;
   dropdownOptions?: QSelectRestProps;
   searchInputOptions?: QInputRestProps;
   useIcon?: boolean;
+  countries: Country[],
+  hideCountryCode: boolean,
 }>(), {
   dropdownOptions: undefined,
   useIcon: false,
+  searchInputOptions: undefined,
 });
-
 const emits = defineEmits<{
   (event: 'update:model-value', value: Country): void;
   (event: 'country-changed', value: Country): void;
@@ -98,13 +101,12 @@ const searchText = ref('');
 const countryOptions = ref<Country[]>([]);
 
 onMounted(() => {
-  countryOptions.value = countries;
+  countryOptions.value = props.countries;
 });
-
 
 function performSearch() {
   const needle = searchText.value.toLowerCase().trim();
-  countryOptions.value = needle === '' ? countries : filterCountries(needle);
+  countryOptions.value = needle === '' ? props.countries : filterCountries(needle, props.countries);
 }
 function countryChanged(val: Country) {
   emits('update:model-value', val);
